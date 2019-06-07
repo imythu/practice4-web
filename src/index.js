@@ -1,15 +1,16 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import Blog from './Blog';
-import {serverAddressHeadForCommunity, serverAddressHeadForUser} from './serverAdress';
+import ArticleList from './ArticleList';
+import {serverAddressHeadForUser} from './serverAdress';
 import axios from 'axios';
 import ErrorPage from './ErrorPage'
 import LinearIndeterminate from './LinearIndeterminate';
-import userInfo from './UserInfo';
+import './css/MaterialIcons.css';
+import './font/materialfont.woff2';
 
+let userInfo = {};
 axios.defaults.withCredentials=true;
 axios.defaults.responseType="json";
-let articles = [{}];
 let userId;
 
 ReactDOM.render(<LinearIndeterminate />, document.querySelector('#app'));
@@ -20,9 +21,14 @@ window.onload = function () {
 function login() {
 	let currentUrl = window.location.href;
 	let suffix = currentUrl.substring(currentUrl.indexOf("?"));
+	userInfo.phoneNumber = userInfo.phoneNumber == null ? suffix.substring(13, suffix.indexOf("&")) : userInfo.phoneNumber;
+	userInfo.password = userInfo.password == null ? suffix.substring(suffix.indexOf("&password")+10) : userInfo.password;
+	if (userInfo.password.indexOf("#") > 0 ) {
+		userInfo.password = userInfo.password.substring(0, userInfo.password.indexOf("#"));
+	}
 	axios({
 		method: 'post',
-		url: serverAddressHeadForUser + "login" + suffix,
+		url: serverAddressHeadForUser + "login?phoneNumber="+userInfo.phoneNumber+"&password="+userInfo.password
 	}).then(function (res) {
 		let resultJson = res.data;
 		if (resultJson['result'] > 0) {
@@ -30,7 +36,13 @@ function login() {
 			userInfo.userId = userId;
 			// console.log("登录成功")
 			// ReactDOM.render(<ErrorPage errorTitle="登录成功" />, document.querySelector('#app'));
-			getNewestArticles();
+			sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
+			let commentMessageList = [];
+			sessionStorage.setItem("commentMessageList", JSON.stringify(commentMessageList));
+			let articleMessageList = [];
+			sessionStorage.setItem("articleMessageList", JSON.stringify(articleMessageList));
+			renderHomePage();
+			// getNewestArticles();
 		} else {
 			renderNotLoginPage();
 		}
@@ -40,22 +52,8 @@ function login() {
 	})
 }
 
-function getNewestArticles() {
-	axios({
-        method: "get",
-        url: serverAddressHeadForCommunity + 'getNewestArticles?endArticleId=-1',
-    }).then(function (res) {
-			articles = res.data;
-			renderHomePage();
-	}).catch(function (error) {
-	    console.log(error);
-		articles = [{}];
-		renderNetworkErrorPage();
-	})
-}
-
 function renderHomePage() {
-	ReactDOM.render(<Blog userId={userId} articles={articles} />, document.querySelector('#app'));
+	ReactDOM.render(<ArticleList />, document.querySelector('#app'));
 }
 
 function renderNotLoginPage() {

@@ -11,16 +11,16 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
-import userInfo from './UserInfo';
 import axios from 'axios';
 import Card from "@material-ui/core/Card";
-import {serverAddressHeadForCommunity} from './serverAdress';
+import {serverAddressHeadForCommunity, serverAddressHeadForUser} from './serverAdress';
 import Button from "@material-ui/core/Button";
 import Avatar from "@material-ui/core/Avatar";
 import Icon from "@material-ui/core/Icon";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 
+let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 const useStyles = makeStyles({
 	root: {
 		padding: '1rem 10px',
@@ -94,7 +94,7 @@ function Article(props) {
 					<Avatar
 						medium="true"
 						src={
-							"http://imyth.top:2333/practice4/user/getHeadImage?userId=" + (article['userId'] == null ? 0 : article['userId'])
+							serverAddressHeadForUser + "getHeadImage?userId=" + (article['userId'] == null ? 0 : article['userId'])
 						}
 					/>
 				</Grid>
@@ -103,13 +103,14 @@ function Article(props) {
 						<Grid item xs={12}>
 							<Typography variant="h5" bold="true" inline>
 								{article['article']['articleTitle']}
-							</Typography>{' '}
+							</Typography>
+							<Typography light="true">
+								{' '}
+							</Typography>
 							<Typography variant="caption" light="true" inline>
 								{article['article']['gmtCreate']}
 							</Typography>
-							<Typography light="true" inline>
-								·
-							</Typography>{' '}
+							<Typography light="true" />
 							<Typography light="true" inline>
 							</Typography>
 							<Typography paragraph variant="body2">
@@ -153,16 +154,14 @@ function Article(props) {
 								loader={<LinearIndeterminate/>}
 								useWindow={true}>
 								{article['commentList'].map((comment) => (
-									<div key={comment.commentId}>
-										<Typography paragraph inline variant="subtitle2" color="primary" onClick={()=> {
-											setReplyToUserName(comment.myNickname);
-											sendComment.replyToUserId = comment.myUserId;
-											switchOpen(true);
-										}}>
-										</Typography>
-										<Typography color="secondary">
+									<div key={comment.commentId}onClick={()=> {
+										setReplyToUserName(comment.myNickname);
+										sendComment.replyToUserId = comment.myUserId;
+										switchOpen(true);
+									}}>
+										<Typography  color="textSecondary">
 											{"@"+comment.myNickname}
-											{comment['replyToUserNickname'] == null ? "回复@楼主 " : (" 回复@" + comment['replyToUserNickname']) + "： "}
+											{comment['replyToUserNickname'] == null ? "回复@楼主: " : (" 回复@" + comment['replyToUserNickname']) + "： "}
 											{comment['commentContent']}
 										</Typography>
 									</div>

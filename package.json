@@ -2,6 +2,7 @@
   "name": "reacttest",
   "version": "1.0.0",
   "description": "",
+  "homepage": "./",
   "main": "index.js",
   "scripts": {
 	"start": "webpack --mode development",

@@ -1,3 +1,6 @@
-idea/
+idea/**
 node_modules/
 public/
+.idea/inspectionProfiles/
+.idea/vcs.xml
+src/test.html

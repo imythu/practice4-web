@@ -23,12 +23,9 @@ glob.sync(__dirname+'/src/**/*.ejs').forEach(file => {
 		inject: false,
 		minify: true
 	};
-	// console.log(file)
-	// console.log(file.substring(file.indexOf('src')+3))
-	// console.log(htmlRelativeDir + path.basename(file, '.html') + '.js')
 	selectPlugins.push(new HtmlWebPackPlugin(pluginConf));
 });
-// console.log(selectPlugins);
+console.log(selectPlugins);
 module.exports = {
 	module: {
 		rules: [
@@ -42,8 +39,22 @@ module.exports = {
 			{
 				test: /\.css$/,
 				use: [
-					{ loader: "style-loader/url" },
-					{ loader: "file-loader" }]
+					{
+						loader: "style-loader/url"
+					},
+					{ loader: "file-loader",
+						options: {
+							name: 'css/[name].[ext]',
+						}
+					}
+					],
+			},
+			{
+				test: /\.(ttf|eot|woff|woff2)$/,
+				loader: 'file-loader',
+				options: {
+					name: 'font/[name].[ext]',
+				},
 			},
 			{ test: /\.(jpg|png|gif|bmp|jpeg)$/,//正则表达式匹配图片规则
 				use: [{
@@ -64,25 +75,8 @@ module.exports = {
 	},
 	entry: selectEntrys,
 	plugins: selectPlugins,
-	// plugins: [
-	//     new HtmlWebPackPlugin({
-	//         template:  "./src/template.ejs",
-	//         inject: false,
-	//         chunks: 'index',
-	//         filename: 'index.html'
-	//     }),
-	//     new HtmlWebPackPlugin({
-	//         title:  "user/user",
-	//         filename: 'user/index.html',
-	//         template: "./src/template.ejs",
-	//         inject: false
-	//     })
-	// ],
 	devServer: {
 		host:'127.0.0.1',
 		port:3000,
 	},
-	// node:{
-	// 	fs: "empty"
-	// }
 };

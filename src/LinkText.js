@@ -14,9 +14,7 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
     },
 });
-const texts = [
-    'GitHub',
-]
+
 function LinkText(props) {
     const { classes } = props;
     return (

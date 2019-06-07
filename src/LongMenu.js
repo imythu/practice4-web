@@ -4,11 +4,11 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Link from "@material-ui/core/Link"
+import ReactDOM from "react-dom";
+import RelatedMe from "./relatedToMe/RelatedMe";
 const options = [
 	"home",
-	"myArticle",
 	"myCollections",
-	"myFocus",
 	"relatedToMe",
 ];
 const memus = {
@@ -16,20 +16,12 @@ const memus = {
 		url: "/index.html",
 		name: "主页",
 	},
-	myArticle: {
-		url: "/myArticle.html",
-		name: "我的贴子",
-	},
 	myCollections: {
-		url: "/myCollections.html",
+		url: "/myCollections",
 		name: "我的收藏",
 	},
-	myFocus: {
-		url: "/myFocus.html",
-		name: "我的关注",
-	},
 	relatedToMe: {
-		url: "/relatedToMe.html",
+		url: "/relatedToMe",
 		name: "与我相关",
 	}
 }
@@ -77,7 +69,7 @@ class LongMenu extends React.Component {
 				>
 					{options.map(option => (
 						<MenuItem key={option} onClick={this.handleClose}>
-							<Link href={memus[option]['url']}>
+							<Link href={memus[option].url}>
 								{memus[option]['name']}
 							</Link>
 						</MenuItem>
