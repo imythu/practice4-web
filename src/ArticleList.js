@@ -3,23 +3,22 @@ import React, {useEffect, useState} from 'react';
 import {withStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
-import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import LongMenu from "./LongMenu";
-import PublishArticle from "./ArrowUpward";
+import ArrowUpward from "./ArrowUpward";
 import {websocketBaseUrl} from './serverAdress';
 import Fab from "@material-ui/core/Fab";
 import Icon from "@material-ui/core//Icon";
 import Badge from "@material-ui/core/Badge";
+import Paper from "@material-ui/core/Paper";
 import ArticleListMain from "./ArticleListMain";
-import ArrowUpward from "./ArrowUpward";
 
 const styles = theme => ({
 	layout: {
 		width: 'auto',
 		marginTop: theme.spacing.unit * 2,
-		marginLeft: theme.spacing.unit * 3,
-		marginRight: theme.spacing.unit * 3,
+		marginLeft: theme.spacing.unit,
+		marginRight: theme.spacing.unit,
 	},
 	toolbarMain: {
 		borderBottom: `1px solid ${theme.palette.grey[300]}`,
@@ -34,13 +33,15 @@ const styles = theme => ({
 	},
 });
 
-let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 let websocketHasOpen = false;
 let messageNumber = 0;
 
 function ArticleList(props) {
 	const [messageNum, setMessageNum] = useState(0);
 	const { classes } = props;
+
+	let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+
 	useEffect(function () {
 		if (websocketHasOpen) {
 			return;
@@ -55,7 +56,7 @@ function ArticleList(props) {
 			websocketHasOpen = true;
 		};
 		websocket.onmessage = function (event) {
-			console.log(event.data);
+			// console.log(event.data);
 			if (event.data === "pong") {
 				console.log("pong");
 				setTimeout(function () {
@@ -63,15 +64,19 @@ function ArticleList(props) {
 				}, 5000);
 				return;
 			}
-			let jsonData = JSON.parse(event.data);
-			if (jsonData.commentMessage != null) {
-				let commentMessageList = JSON.stringify(JSON.parse(sessionStorage.getItem("commentMessageList")).push(jsonData));
-				sessionStorage.setItem("commentMessageList", commentMessageList);
+
+			if (sessionStorage.getItem("messageList") == null) {
+				let messageList = [];
+				messageList.push(event.data);
+				sessionStorage.setItem("messageList", JSON.stringify(messageList));
+
 				messageNumber+=1;
 				setMessageNum(messageNumber);
-			} else if (jsonData.articleMessage != null) {
-				let articleMessageList = JSON.stringify(JSON.parse(sessionStorage.getItem("articleMessageList")).push(jsonData));
-				sessionStorage.setItem("articleMessageList", articleMessageList);
+			} else {
+				let messageList = JSON.parse(sessionStorage.getItem("messageList"));
+				messageList.unshift(event.data);
+				sessionStorage.setItem("messageList", JSON.stringify(messageList));
+
 				messageNumber+=1;
 				setMessageNum(messageNumber);
 			}
@@ -79,30 +84,32 @@ function ArticleList(props) {
 	});
 	return (
 		<React.Fragment>
-			<PublishArticle/>
+			<Paper className={classes.layout}>
 			<CssBaseline />
-			<ArrowUpward/>
-					<Toolbar className={classes.toolbarMain} id="pageStart">
-						<Typography
-							component="h2"
-							variant="h5"
-							color="inherit"
-							align="left"
-							noWrap
-							className={classes.toolbarTitle}
-						>
-							家长社区
-						</Typography>
-						<Fab size="small" color="primary">
-							<Icon>
-								add
-							</Icon>
-						</Fab>
-						<Badge badgeContent={messageNum} color="primary">
-							<LongMenu/>
-						</Badge>
-					</Toolbar>
-            <ArticleListMain/>
+			<ArrowUpward />
+			<Toolbar className={classes.toolbarMain} id="pageStart">
+				<Typography
+					component="h2"
+					variant="h5"
+					color="inherit"
+					align="left"
+					noWrap
+					className={classes.toolbarTitle}
+				>
+					家长社区
+				</Typography>
+				<Fab size="small" color="primary" onClick={() => {
+					window.location.href="./publisharticle/index.html";
+				}}>
+					<Icon>
+						add
+					</Icon>
+				</Fab>
+				<Badge badgeContent={messageNum} color="primary">
+					<LongMenu/>
+				</Badge>
+			</Toolbar>
+			<ArticleListMain/>
 			{/* Footer */}
 			<footer className={classes.footer}>
 				<Typography variant="h6" align="center" gutterBottom>
@@ -112,6 +119,7 @@ function ArticleList(props) {
 					@2019 myth
 				</Typography>
 			</footer>
+			</Paper>
 		</React.Fragment>
 	);
 }

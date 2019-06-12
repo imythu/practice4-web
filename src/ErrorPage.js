@@ -7,6 +7,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import red from '@material-ui/core/colors/red';
+import {serverAddressHeadForUser} from "./serverAdress";
 
 const styles = theme => ({
 	card: {
@@ -25,7 +26,7 @@ class ErrorPage extends React.Component {
 
 	render() {
 		const { classes } = this.props;
-		const imageSrc = this.props.imageSrc == null ? "https://imyth.top/defaultHead.png" : this.props.imageSrc;
+		const imageSrc = this.props.imageSrc == null ? serverAddressHeadForUser+"getHeadImage?userId=-1" : this.props.imageSrc;
 		const errorTitle = this.props.errorTitle == null ? "错误" : this.props.errorTitle;
 		return (
 			<Card className={classes.card}>

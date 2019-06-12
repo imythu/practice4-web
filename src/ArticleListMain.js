@@ -10,6 +10,8 @@ import {serverAddressHeadForCommunity} from "./serverAdress";
 import axios from 'axios';
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
+import LinearIndeterminate from "./LinearIndeterminate";
+import InfiniteScroll from "react-infinite-scroller";
 
 const styles = theme => ({
     mainGrid: {
@@ -28,43 +30,18 @@ const styles = theme => ({
     }
 });
 
-let isFirstLoad = true;
-
 function ArticleListMain(props) {
     const [articles, setArticles] = useState([]);
     const [endArticleId, setEndArticleId] = useState(-1);
     const [hasMore, setHasMore] = useState(true);
     const { classes } = props;
     let articleItems = [];
-    useEffect(function () {
-        if (isFirstLoad) {
-            axios.defaults.withCredentials=true;
-            axios({
-                method: "get",
-                url: serverAddressHeadForCommunity + 'getNewestArticles?endArticleId=' + endArticleId,
-                responseType: "json",
-            }).then(function (res) {
-                if (res.data == null) {
-                    setHasMore(false);
-                    return;
-                }
-                res.data.forEach(item => {
-                    articles.push(item);
-                });
-                setArticles(articles);
-                setEndArticleId(res.data[res.data.length-1].article.articleId);
-            }).catch(function (error) {
-                console.log(error);
-            });
-            isFirstLoad = false;
-        }
-    });
     articles.map((article) => (
         articleItems.push(
             <Article key={article['article']['articleId']} article={article}/>
         )
     ));
-    return (<main>
+    return (
         <Grid container spacing={40} className={classes.mainGrid} key={endArticleId}>
             {/* Main content */}
             <Grid key="1" item xs={12} md={8}>
@@ -72,32 +49,44 @@ function ArticleListMain(props) {
                     最新贴子
                 </Typography>
                 <Divider />
-                {articleItems}
-                <IconButton className={classes.loadBtn} onClick={() => {
-                    axios.defaults.withCredentials=true;
-                    axios({
-                        method: "get",
-                        url: serverAddressHeadForCommunity + 'getNewestArticles?endArticleId=' + endArticleId,
-                        responseType: "json",
-                    }).then(function (res) {
-                        if (res.data == null) {
-                            setHasMore(false);
-                            return;
-                        }
-                        res.data.forEach(item => {
-                            articles.push(item);
+                <InfiniteScroll
+                    key={endArticleId}
+                    threshold={480}
+                    pageStart={1}
+                    loadMore={() => {
+                        axios.defaults.withCredentials=true;
+                        axios({
+                            method: "get",
+                            url: serverAddressHeadForCommunity + 'getNewestArticles?endArticleId=' + endArticleId,
+                            responseType: "json",
+                        }).then(function (res) {
+                            if (res.data == null || res.data.length === 0) {
+                                setHasMore(false);
+                                return;
+                            }
+                            let focusArticlesId = JSON.parse(sessionStorage.getItem("focusArticlesId"));
+                            res.data.forEach(item => {
+                                if (focusArticlesId.indexOf(item.article.articleId) >= 0) {
+                                    // console.log("关注了" + item.article.articleId);
+                                    item.isFocus = true;
+                                } else {
+                                    // console.log("未关注" + item.article.articleId);
+                                    item.isFocus = false;
+                                }
+                                // console.log(item);
+                                articles.push(item);
+                            });
+                            setArticles(articles);
+                            setEndArticleId(res.data[res.data.length-1].article.articleId);
+                        }).catch(function (error) {
+                            console.log(error);
                         });
-                        setArticles(articles);
-                        setEndArticleId(res.data[res.data.length-1].article.articleId);
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }}>
-                    {/*<Icon>*/}
-                    加载更多
-                    {/*    load*/}
-                    {/*</Icon>*/}
-                </IconButton>
+                    }}
+                    hasMore={hasMore}
+                    loader={<LinearIndeterminate key={articles.length} />}
+                    useWindow={true}>
+                    {articleItems}
+                </InfiniteScroll>
             </Grid>
             {/* End main content */}
             {/* Sidebar */}
@@ -117,7 +106,6 @@ function ArticleListMain(props) {
             </Grid>
             {/* End sidebar */}
         </Grid>
-    </main>
     );
 }
 

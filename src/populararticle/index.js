@@ -2,6 +2,6 @@ import '../css/MaterialIcons.css';
 import '../font/materialfont.woff2';
 import React from "react";
 import ReactDOM from  "react-dom";
-import CollectionArticle from "./CollectionArticle";
+import PopularArticles from "./PopularArticles";
 
-ReactDOM.render(<CollectionArticle />, document.querySelector('#app'));
+ReactDOM.render(<PopularArticles />, document.querySelector('#app'));

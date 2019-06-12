@@ -29,7 +29,7 @@ const styles = theme => ({
 let loaded = false;
 let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 
-function CollectionArticle(props) {
+function PopularArticles(props) {
     const [articles, setArticles] = useState([]);
     const [endArticleId, setEndArticleId] = useState(-1);
     const [hasMore, setHasMore] = useState(true);
@@ -44,7 +44,7 @@ function CollectionArticle(props) {
         if (!loaded) {
             axios.defaults.withCredentials = true;
             axios({
-                url: serverAddressHeadForCommunity + "getMyCollectionArticles?userId="+userInfo.userId,
+                url: serverAddressHeadForCommunity + "getPopularArticles",
                 type: "get",
             }).then(res => {
                 setArticles(res.data);
@@ -57,7 +57,7 @@ function CollectionArticle(props) {
             {/* Main content */}
             <Grid key="1" item xs={12} md={8}>
                 <Typography variant="h6" gutterBottom>
-                    我的收藏
+                    热门帖子
                 </Typography>
                 <Divider />
                 {articleItems}
@@ -83,4 +83,4 @@ function CollectionArticle(props) {
     );
 }
 
-export default withStyles(styles)(CollectionArticle);
+export default withStyles(styles)(PopularArticles);

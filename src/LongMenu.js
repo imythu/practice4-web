@@ -4,12 +4,12 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Link from "@material-ui/core/Link"
-import ReactDOM from "react-dom";
-import RelatedMe from "./relatedToMe/RelatedMe";
+
 const options = [
 	"home",
 	"myCollections",
 	"relatedToMe",
+	"popular",
 ];
 const memus = {
 	home: {
@@ -17,14 +17,18 @@ const memus = {
 		name: "主页",
 	},
 	myCollections: {
-		url: "/myCollections",
+		url: "/myCollections/index.html",
 		name: "我的收藏",
 	},
 	relatedToMe: {
-		url: "/relatedToMe",
+		url: "/relatedToMe/index.html",
 		name: "与我相关",
-	}
-}
+	},
+	popular: {
+		url: "/populararticle/index.html",
+		name: "热门贴子",
+	},
+};
 
 const ITEM_HEIGHT = 48;
 

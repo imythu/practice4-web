@@ -4,8 +4,6 @@ import Grid from '@material-ui/core/Grid';
 import {makeStyles} from '@material-ui/styles';
 import ImageGridList from './ImageGridList';
 import {unstable_Box as Box} from '@material-ui/core/Box';
-import InfiniteScroll from 'react-infinite-scroller';
-import LinearIndeterminate from "./LinearIndeterminate";
 import Slide from "@material-ui/core/Slide";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -20,7 +18,7 @@ import Icon from "@material-ui/core/Icon";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 
-let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+
 const useStyles = makeStyles({
 	root: {
 		padding: '1rem 10px',
@@ -30,10 +28,16 @@ const useStyles = makeStyles({
 	},
 });
 function Article(props) {
+	let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 	const classes = useStyles();
 	const [article, setArticle] = useState(props.article);
 	const [open, switchOpen] = useState(false);
+
+	let favoriteIcon = <Icon light="true" text="true">favorite</Icon>;
+	let favoriteBorderIcon = <Icon light="true" text="true">favorite_border</Icon>;
+	const [favorite, setFavoriteBorder] = useState(article.isFocus ? favoriteIcon : favoriteBorderIcon);
 	const [replyToUserName, setReplyToUserName] = useState("楼主");
+	const [focusNum, setFocusNum] = useState(article.focusNumber);
 	const [sendComment, setSendComment] = useState({
 		userId: userInfo.userId,
 		articleId: article.article.articleId,
@@ -54,7 +58,7 @@ function Article(props) {
 				"Content-Type": "application/json; charset=utf-8"},
 			data: jsonData
 		}).then(function (res) {
-			console.log("返回"+res.data)
+			// console.log("返回"+res.data);
 			if (res.data != null) {
 				article.replyNum+=1;
 				article.commentList.push(res.data);
@@ -66,7 +70,19 @@ function Article(props) {
 		}).catch(function (error) {
 			console.log(error);
 		})
-	}
+	};
+	let images = [];
+	article.imageList.forEach((item) => {
+		if (item.imageUrl.indexOf("http") >= 0) {
+			images.push(item);
+		} else {
+			images.push({
+				imageId: item.imageId,
+				imageUrl: serverAddressHeadForCommunity + "getArticleImage/" + item.imageUrl
+			});
+		}
+	});
+	article.imageList = images;
 	return (
 		<Card className={classes.root}>
 			<Box mb="5px">
@@ -122,7 +138,7 @@ function Article(props) {
 							<Box ml="-12px" display="inline-flex" alignItems="center">
 								<IconButton onClick={() => {
 									sendComment.replyToUserId = null;
-									setReplyToUserName("楼主")
+									setReplyToUserName("楼主");
 									switchOpen(true);
 								}}>
 									<Icon light="true" text="true">
@@ -134,25 +150,56 @@ function Article(props) {
 								</Typography>
 							</Box>
 							<Box ml="32px" display="inline-flex" alignItems="center">
-								<IconButton danger="true">
-									<Icon light="true" text="true">
-										favorite_border
-									</Icon>
+								<IconButton danger="true" onClick={() => {
+									let focusArticlesIdList = JSON.parse(sessionStorage.getItem("focusArticlesId"));
+									axios.defaults.withCredentials=true;
+									// console.log(article.article.articleId);
+									let index = focusArticlesIdList.indexOf(article.article.articleId);
+									if (index >= 0) {
+										axios({
+											url: serverAddressHeadForCommunity + "unFocusArticle?userId="+userInfo.userId+"&articleId="+article.article.articleId,
+											method: "post",
+											contentType: "application/x-www-form-urlencoded",
+											responseType: "json"
+										}).then(res => {
+											console.log(res.data.result);
+											if (res.data.result === 1) {
+												focusArticlesIdList.splice(index);
+												sessionStorage.setItem("focusArticlesId", JSON.stringify(focusArticlesIdList));
+												// console.log(article);
+												setFocusNum(focusNum - 1);
+												setFavoriteBorder(favoriteBorderIcon);
+											} else {
+												console.log("取消收藏失败")
+											}
+										})
+									} else {
+										axios({
+											url: serverAddressHeadForCommunity + "focusArticle?userId="+userInfo.userId+"&articleId="+article.article.articleId,
+											method: "post",
+											responseType: "json"
+										}).then(res => {
+											if (res.data.result === 1) {
+												focusArticlesIdList.push(article.article.articleId);
+												sessionStorage.setItem("focusArticlesId", JSON.stringify(focusArticlesIdList));
+												setFavoriteBorder(favoriteIcon);
+												setFocusNum(focusNum + 1);
+											} else {
+												alert("收藏失败");
+											}
+										}).catch(err => {
+											console.log(err);
+											alert("错误，收藏失败");
+										});
+									}
+								}}>
+									{favorite}
 								</IconButton>
 								<Typography variant="caption" light="true" inline danger="true">
-									{article['focusNumber']}
+									{focusNum}
 								</Typography>
 							</Box>
 						</Grid>
-							<InfiniteScroll
-								key={article.articleId}
-								threshold={300}
-								pageStart={0}
-								loadMore={() => {
-								}}
-								hasMore={false}
-								loader={<LinearIndeterminate/>}
-								useWindow={true}>
 								{article['commentList'].map((comment) => (
 									<div key={comment.commentId}onClick={()=> {
 										setReplyToUserName(comment.myNickname);
@@ -166,7 +213,6 @@ function Article(props) {
 										</Typography>
 									</div>
 								))}
-							</InfiniteScroll>
 						<Dialog
 							open={open}
 							TransitionComponent={Transition}

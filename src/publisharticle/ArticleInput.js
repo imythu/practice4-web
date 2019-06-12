@@ -24,7 +24,8 @@ const styles = theme => ({
         margin: "0 auto",
     }
 });
-let initFiles;
+
+let userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
 
 class ArticleInput extends React.Component{
 
@@ -115,6 +116,7 @@ class ArticleInput extends React.Component{
                 />
                 <TextField
                     id="images"
+                    required={true}
                     name={"imageFiles"}
                     label="图片"
                     style={{ margin: 8}}
@@ -134,9 +136,28 @@ class ArticleInput extends React.Component{
                         shrink: true,
                     }}
                 />
+                <TextField id={"userId"} name={"userId"} type={"hidden"} value={userInfo.userId}/>
                 <ImageGridList imageList={this.state.imageList} />
                 <Button onClick={() => {
+                    if (document.getElementById("title").value.trim() === "") {
+                        alert("标题不能为空");
+                        return;
+                    }
+                    if (document.getElementById("content").value.trim() === "") {
+                        alert("内容不能为空");
+                        return;
+                    }
                     let formData = new FormData(document.getElementById("articleForm"));
+                    let checkFile = document.getElementById("images").value;
+                    if (checkFile == null || checkFile.trim() === "") {
+                        /*alert("至少要用一张图片");
+                        return;*/
+                        formData.delete("imageFiles");
+                    }
+                    // formData.forEach(item => {
+                    //     console.log(item);
+                    // });
+                    // return;
                     axios({
                         url: serverAddressHeadForCommunity + "publishArticle",
                         data: formData,

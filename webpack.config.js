@@ -1,6 +1,7 @@
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const glob = require('glob');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 // 查找js文件
 let selectEntrys = {};
@@ -13,7 +14,7 @@ glob.sync(__dirname+'/src/**/index.js').forEach(file => {
 let selectPlugins = [];
 glob.sync(__dirname+'/src/**/*.ejs').forEach(file => {
 	let htmlRelativeDir = file.substring(file.indexOf('src')+4, file.indexOf(path.basename(file)));
-	// console.log( file.substring(file.indexOf('src')+4))
+	// console.log(htmlRelativeDir);
 	let aChunk = [];
 	aChunk.push((file.substring(file.indexOf('src')+4).replace('.html', '')))
 	let pluginConf = {
@@ -25,8 +26,11 @@ glob.sync(__dirname+'/src/**/*.ejs').forEach(file => {
 	};
 	selectPlugins.push(new HtmlWebPackPlugin(pluginConf));
 });
-console.log(selectPlugins);
+// console.log(selectPlugins);
 module.exports = {
+	optimization: {
+		minimizer: [new UglifyJsPlugin()],
+	},
 	module: {
 		rules: [
 			{

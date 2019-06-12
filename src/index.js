@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
 import ArticleList from './ArticleList';
-import {serverAddressHeadForUser} from './serverAdress';
+import {serverAddressHeadForCommunity, serverAddressHeadForUser} from './serverAdress';
 import axios from 'axios';
 import ErrorPage from './ErrorPage'
 import LinearIndeterminate from './LinearIndeterminate';
@@ -33,6 +33,17 @@ function login() {
 		let resultJson = res.data;
 		if (resultJson['result'] > 0) {
 			userId = resultJson['result'];
+
+			axios({
+				url: serverAddressHeadForCommunity + "getMyFocusArticlesId?userId="+userId,
+				method: "get",
+				responseType: "json",
+			}).then(res => {
+				sessionStorage.setItem("focusArticlesId", JSON.stringify(res.data.result));
+			}).catch(err => {
+				console.log(err);
+			});
+
 			userInfo.userId = userId;
 			// console.log("登录成功")
 			// ReactDOM.render(<ErrorPage errorTitle="登录成功" />, document.querySelector('#app'));
